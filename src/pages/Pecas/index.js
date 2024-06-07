@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { MaterialReactTable } from 'material-react-table';
 import {
   Box,
@@ -23,6 +24,8 @@ const Pecas = () => {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [tableData, setTableData] = useState({});
     const [validationErrors, setValidationErrors] = useState({});
+
+    const user = useSelector(state => state.userType.user);
 
     useEffect(() => {
         (async () => {
@@ -184,16 +187,19 @@ const Pecas = () => {
             onEditingRowCancel={handleCancelRowEdits}
             renderRowActions={({ row, table }) => (
                 <Box sx={{ display: 'flex', gap: '1rem' }}>
-                    <Tooltip arrow placement="left" title="Edit">
-                    <IconButton onClick={() => table.setEditingRow(row)}>
-                        <Edit />
-                    </IconButton>
-                    </Tooltip>
-                    <Tooltip arrow placement="right" title="Delete">
-                    <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                        <Delete />
-                    </IconButton>
-                    </Tooltip>
+                    {user !== 'ADMIN' ? <></> : 
+                    <>
+                        <Tooltip arrow placement="left" title="Editar Solicitação">
+                            <IconButton onClick={() => table.setEditingRow(row)}>
+                                <Edit />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip arrow placement="right" title="Deletar Solicitação">
+                            <IconButton color="error" onClick={() => handleDeleteRow(row)}>
+                                <Delete />
+                            </IconButton>
+                        </Tooltip>
+                    </>}
                 </Box>
             )}
             renderTopToolbarCustomActions={() => (

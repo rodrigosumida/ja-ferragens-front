@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import logo from './logo_ferragens_negrao.png';
+import MenuUser from '../MenuUser';
 
 import { AccountItem, Logo, Nav, NavList, NavItem } from './styled';
 
@@ -24,11 +25,13 @@ export default function Header() {
           </Link>
         </NavItem>
         <NavItem>
-          <Link to="/requisicao">
-            Requisições
+          <Link to="/solicitacoes">
+            Solicitações
           </Link>
         </NavItem>
       </NavList>
+
+      <MenuUser />
       <AccountItem>
         <Link to="/login">
           <span>Login</span>

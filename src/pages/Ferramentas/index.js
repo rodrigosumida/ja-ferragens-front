@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { MaterialReactTable } from 'material-react-table';
 import {
     Autocomplete,
@@ -30,6 +31,8 @@ const Ferramentas = () => {
 
     const [validationErrors, setValidationErrors] = useState({});
 
+    const user = useSelector(state => state.userType.user);
+
     const getPecasList = async () => {
         await api.get('/peca/listar')
         .then(res => {
@@ -60,10 +63,25 @@ const Ferramentas = () => {
             alert('Nome da ferramenta é obrigatório');
             return false;
         }
-        // if (!values.pecas) {
-        //     alert('Tanto a peça quanto sua quantidade é obrigatória');
-        //     return false;
-        // }
+        if (!values.pecas || values.pecas.length < 1) {
+            alert('Preencha corretamente o campo das peças');
+            return false;
+        }
+
+        let vazio = false;
+
+        values.pecas.forEach(peca => {
+            if (vazio) return;
+            if (!peca.peca || !peca.quantidade) {
+                vazio = true;
+                alert('Preencha corretamente o campo das peças');
+                return;
+            }
+        });
+
+        if (vazio) {
+            return false;
+        }
         delete values._id;
         await api.post('/ferramenta/inserir', values)
         .then(res => {
@@ -208,16 +226,19 @@ const Ferramentas = () => {
             onEditingRowCancel={handleCancelRowEdits}
             renderRowActions={({ row, table }) => (
                 <Box sx={{ display: 'flex', gap: '1rem' }}>
-                    <Tooltip arrow placement="left" title="Edit">
-                    <IconButton onClick={() => table.setEditingRow(row)}>
-                        <Edit />
-                    </IconButton>
-                    </Tooltip>
-                    <Tooltip arrow placement="right" title="Delete">
-                    <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                        <Delete />
-                    </IconButton>
-                    </Tooltip>
+                    {user !== 'ADMIN' ? <></> : 
+                    <>
+                        <Tooltip arrow placement="left" title="Editar Solicitação">
+                            <IconButton onClick={() => table.setEditingRow(row)}>
+                                <Edit />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip arrow placement="right" title="Deletar Solicitação">
+                            <IconButton color="error" onClick={() => handleDeleteRow(row)}>
+                                <Delete />
+                            </IconButton>
+                        </Tooltip>
+                    </>}
                 </Box>
             )}
             renderTopToolbarCustomActions={() => (
@@ -267,6 +288,10 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas,
         }, {}),
     );
 
+    useEffect(() => {
+        setValues((prevValues) => ({ ...prevValues, pecas: pecasValues }));
+    }, [pecasValues]);
+
     const handleSubmit = async () => {
         const invalid = await onSubmit(values);
         if (invalid) {
@@ -300,6 +325,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas,
                     ))}
                     {pecasValues.map((peca, index) => (
                     <>
+                    <h3>Peca {index + 1}</h3>
                         <Autocomplete
                             key={index}
                             disablePortal
@@ -310,7 +336,6 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas,
                                     const newPecas = [...pecasValues];
                                     newPecas[index] = { ...newPecas[index], peca: value._id };
                                     setPecasValues(newPecas);
-                                    setValues({ ...values, 'pecas': pecasValues });
                                     console.log(values);
                                 } catch (err) {
                                     setValues({ ...values, [e.target.name]: '' })
@@ -328,7 +353,6 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas,
                                     const newQuantidade = [...pecasValues];
                                     newQuantidade[index] = { ...newQuantidade[index], quantidade: parseInt(e.target.value) };
                                     setPecasValues(newQuantidade);
-                                    setValues({ ...values, 'pecas': pecasValues });
                                     console.log(values);
                                 } catch (err) {
                                     setValues({ ...values, [e.target.name]: '' })

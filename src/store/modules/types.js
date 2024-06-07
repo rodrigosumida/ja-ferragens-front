@@ -1,0 +1,5 @@
+export const USER_SOLICITANTE = 'USER_SOLICITANTE';
+export const USER_APROVADOR = 'USER_APROVADOR';
+export const USER_ADMIN = 'USER_ADMIN';
+
+export const PERSIST_REHYDRATE = 'persist/REHYDRATE';
