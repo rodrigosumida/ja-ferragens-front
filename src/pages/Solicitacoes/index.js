@@ -27,6 +27,8 @@ const Solicitacoes = () => {
     const [ferramentaData, setFerramentaData] = useState([]);
     const [ferramentaValues, setFerramentaValues] = useState([]);
 
+    const [pecasList, setPecasList] = useState([]);
+
     const [validationErrors, setValidationErrors] = useState({});
 
     const user = useSelector(state => state.userType.user);
@@ -168,6 +170,23 @@ const Solicitacoes = () => {
         }
 
         try {
+            setPecasList([]);
+            row.getValue('ferramentas').forEach(ferramentaSolicitacao => {
+                const ferramentaEl = ferramentaData.find(ferramenta => ferramenta._id === ferramentaSolicitacao.ferramenta);
+                ferramentaEl.pecas.forEach(peca => {
+                    const pecaExiste = pecasList.find(pecaQuantidade => pecaQuantidade.peca === peca.peca);
+                    if (!!pecaExiste) {
+                        pecaExiste.quantidade += peca.quantidade * ferramentaSolicitacao.quantidade;
+                    } else {
+                        pecasList.push({ peca: peca.peca, quantidade: peca.quantidade * ferramentaSolicitacao.quantidade });
+                    }
+                });
+            });
+            console.log(pecasList);
+            pecasList.forEach(async peca => {
+                await api.put(`/peca/atualizarestoque/${peca.peca}`, { quantidade: peca.quantidade });
+            });
+            
             await api.put(`/solicitacao/atualizar/${row.getValue('_id')}`, { status: 'CONCLUÍDA' });
             // eslint-disable-next-line no-restricted-globals
             location.reload();
@@ -320,7 +339,7 @@ const Solicitacoes = () => {
                             </IconButton>
                             </Tooltip>
                         </>}
-                        {row.getValue('status') !== 'APROVADO' || (user !== 'ADMIN' && user !== 'APROVADOR') ? <></> :
+                        {row.getValue('status') !== 'APROVADA' || (user !== 'ADMIN' && user !== 'APROVADOR') ? <></> :
                         <>
                             <Tooltip arrow placement="right" title="Concluir solicitação">
                                 <IconButton color="success" onClick={() => handleConclusao(row)}>

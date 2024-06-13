@@ -31,6 +31,7 @@ const Pecas = () => {
         (async () => {
             await api.get('/peca/listar')
             .then(res => {
+                console.log(res.data);
                 setTableData(res.data);
             })
             .catch(err => console.log(err))
@@ -48,11 +49,20 @@ const Pecas = () => {
             alert('Nome da peça é obrigatório');
             return false;
         }
+        if (!values.conjunto) {
+            alert('Nome do conjunto é obrigatório');
+            return false;
+        }
+        if (!values.localizacao) {
+            alert('Localização da peça é obrigatória');
+            return false;
+        }
         if (!values.qnt_estoque) {
             alert('A quantidade atual em estoque é obrigatória');
             return false;
         }
         delete values._id;
+        console.log(values);
         await api.post('/peca/inserir', values)
         .then(res => {
             tableData.push(res.data);
@@ -114,6 +124,10 @@ const Pecas = () => {
                         ? validateRequired(event.target.value) : true
                         && cell.column.id === 'nome'
                         ? validateRequired(event.target.value) : true
+                        && cell.column.id === 'conjunto'
+                        ? validateRequired(event.target.value) : true
+                        && cell.column.id === 'localizacao'
+                        ? validateRequired(event.target.value) : true
                         && cell.column.id === 'qnt_estoque'
                         ? validateRequired(event.target.value) : true
                     if (!isValid) {
@@ -152,6 +166,22 @@ const Pecas = () => {
             {
                 accessorKey: 'nome',
                 header: 'Nome',
+                size: 140,
+                muiEditTextFieldProps: ({ cell }) => ({
+                    ...getCommonEditTextFieldProps(cell),
+                }),
+            },
+            {
+                accessorKey: 'conjunto',
+                header: 'Conjunto',
+                size: 140,
+                muiEditTextFieldProps: ({ cell }) => ({
+                    ...getCommonEditTextFieldProps(cell),
+                }),
+            },
+            {
+                accessorKey: 'localizacao',
+                header: 'Localização',
                 size: 140,
                 muiEditTextFieldProps: ({ cell }) => ({
                     ...getCommonEditTextFieldProps(cell),
@@ -203,16 +233,19 @@ const Pecas = () => {
                 </Box>
             )}
             renderTopToolbarCustomActions={() => (
-                <Button
-                    sx={{
-                        margin: 1
-                    }}
-                    color='warning'
-                    onClick={() => setCreateModalOpen(true)}
-                    variant="contained"
-                >
-                    Criar Nova Peça
-                </Button>
+                <>
+                    {user !== 'ADMIN' ? <></> :
+                    <Button
+                        sx={{
+                            margin: 1
+                        }}
+                        color='warning'
+                        onClick={() => setCreateModalOpen(true)}
+                        variant="contained"
+                    >
+                        Criar Nova Peça
+                    </Button>}
+                </>
             )}
         />
         <CreateNewAccountModal

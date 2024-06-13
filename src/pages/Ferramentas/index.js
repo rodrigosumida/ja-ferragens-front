@@ -242,27 +242,30 @@ const Ferramentas = () => {
                 </Box>
             )}
             renderTopToolbarCustomActions={() => (
-                <Button
-                    sx={{
-                        margin: 1
-                    }}
-                    color='warning'
-                    onClick={() => {
-                        const qnt_pecas = parseInt(prompt("Quantos tipos de peças essa ferramenta possui?"));
+                <>
+                    {user !== 'ADMIN' ? <></> :
+                    <Button
+                        sx={{
+                            margin: 1
+                        }}
+                        color='warning'
+                        onClick={() => {
+                            const qnt_pecas = parseInt(prompt("Quantos tipos de peças essa ferramenta possui?"));
 
-                        if (!qnt_pecas || qnt_pecas < 1) {
-                            alert("Valor inválido!");
-                            return;
-                        }
+                            if (!qnt_pecas || qnt_pecas < 1) {
+                                alert("Valor inválido!");
+                                return;
+                            }
 
-                        setQntPecas(qnt_pecas);
-                        setPecasValues(new Array(qnt_pecas).fill(''));
-                        setCreateModalOpen(true);
-                    }}
-                    variant="contained"
-                >
-                    Criar Nova Ferramenta
-                </Button>
+                            setQntPecas(qnt_pecas);
+                            setPecasValues(new Array(qnt_pecas).fill(''));
+                            setCreateModalOpen(true);
+                        }}
+                        variant="contained"
+                    >
+                        Criar Nova Ferramenta
+                    </Button>}
+                </>
             )}
         />
         <CreateNewAccountModal
