@@ -20,6 +20,11 @@ export default function Header() {
           </Link>
         </NavItem>
         <NavItem>
+          <Link to="/conjunto">
+            Conjuntos
+          </Link>
+        </NavItem>
+        <NavItem>
           <Link to="/ferramentas">
             Ferramentas
           </Link>

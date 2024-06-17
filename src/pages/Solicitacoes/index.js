@@ -264,8 +264,13 @@ const Solicitacoes = () => {
                     const ferramentaFormatada = [];
 
                     cell.getValue().forEach(ferramentaRes => {
-                        const nomeFerramenta = ferramentaData.filter(ferramenta => (ferramenta._id === ferramentaRes.ferramenta))
-                        ferramentaFormatada.push(`${nomeFerramenta[0].nome} x${ferramentaRes.quantidade}`);
+                        const nomeFerramenta = ferramentaData.filter(ferramenta => (ferramenta._id === ferramentaRes.ferramenta));
+
+                        if (nomeFerramenta.length < 1) {
+                            ferramentaFormatada.push(`FERRAMENTA NÃO CADASTRADA x${ferramentaRes.quantidade}`);
+                        } else {
+                            ferramentaFormatada.push(`${nomeFerramenta[0].nome} x${ferramentaRes.quantidade}`);
+                        }
                     })
 
                     return ferramentaFormatada.join(', ');
@@ -463,6 +468,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, ferram
                             type="number"
                             onChange={(e) => {
                                 try {
+                                    if (e.target.value < 1) e.target.value = null;
                                     const newQuantidade = [...ferramentaValues];
                                     newQuantidade[index] = { ...newQuantidade[index], quantidade: parseInt(e.target.value) };
                                     setFerramentaValues(newQuantidade);

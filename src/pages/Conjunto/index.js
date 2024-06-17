@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { MaterialReactTable } from 'material-react-table';
 import {
-    Autocomplete,
     Box,
     Button,
     Dialog,
@@ -10,7 +9,6 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
-    MenuItem,
     Stack,
     TextField,
     Tooltip,
@@ -22,28 +20,17 @@ import { Tabela } from './styled';
 
 import api from '../../api/axios';
 
-const Pecas = () => {
+const Conjunto = () => {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [tableData, setTableData] = useState({});
-    const [conjuntoData, setConjuntoData] = useState({});
 
     const [validationErrors, setValidationErrors] = useState({});
 
     const user = useSelector(state => state.userType.user);
 
-    const getConjuntoList = async () => {
-        await api.get('/conjunto/listar')
-        .then(res => {
-            res.data.map(item => item.label = item.nome);
-            setConjuntoData(res.data);
-        })
-        .catch(err => console.log(err))
-    }
-
     useEffect(() => {
         (async () => {
-            await getConjuntoList();
-            await api.get('/peca/listar')
+            await api.get('/conjunto/listar')
             .then(res => {
                 console.log(res.data);
                 setTableData(res.data);
@@ -55,33 +42,14 @@ const Pecas = () => {
 
 
     const handleCreateNewRow = async (values) => {
-        if (!values.codigo) {
-            alert('Código da peça é obrigatório');
-            return false;
-        }
         if (!values.nome) {
-            alert('Nome da peça é obrigatório');
-            return false;
-        }
-        if (!values.conjunto) {
             alert('Nome do conjunto é obrigatório');
             return false;
         }
-        if (!values.localizacao) {
-            alert('Localização da peça é obrigatória');
-            return false;
-        }
-        if (!values.qnt_estoque) {
-            alert('A quantidade atual em estoque é obrigatória');
-            return false;
-        }
-        if (values.qnt_estoque < 0) {
-            alert('Valor de estoque inválido');
-            return false;
-        }
+        values.qnt_pecas = 0;
         delete values._id;
         console.log(values);
-        await api.post('/peca/inserir', values)
+        await api.post('/conjunto/inserir', values)
         .then(res => {
             tableData.push(res.data);
             setTableData([...tableData]);
@@ -93,7 +61,7 @@ const Pecas = () => {
     const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
         if (!Object.keys(validationErrors).length) {
             tableData[row.index] = values;
-            await api.put('/peca/atualizar/' + values._id, values)
+            await api.put('/conjunto/atualizar/' + values._id, values)
             .then(res => {
                 setTableData([...tableData]);
             })
@@ -109,14 +77,14 @@ const Pecas = () => {
     const handleDeleteRow = useCallback(
         async (row) => {
             if (
-                !window.confirm(`Confirma exclusão da peça ${row.getValue('codigo')}?`)
+                !window.confirm(`Confirma exclusão do conjunto ${row.getValue('nome')}?`)
             ) {
                 return;
             }
                 
             try {
                 // eslint-disable-next-line no-unused-vars
-                const response = await api.delete('/peca/delete/' + row.getValue('_id'));
+                const response = await api.delete('/conjunto/delete/' + row.getValue('_id'));
                 tableData.splice(row.index, 1);
                 setTableData([...tableData]);
             } catch (error) {
@@ -138,15 +106,7 @@ const Pecas = () => {
                 helperText: validationErrors[cell.id],
                 onBlur: (event) => {
                     const isValid =
-                        cell.column.id === 'codigo'
-                        ? validateRequired(event.target.value) : true
-                        && cell.column.id === 'nome'
-                        ? validateRequired(event.target.value) : true
-                        && cell.column.id === 'conjunto'
-                        ? validateRequired(event.target.value) : true
-                        && cell.column.id === 'localizacao'
-                        ? validateRequired(event.target.value) : true
-                        && cell.column.id === 'qnt_estoque'
+                        cell.column.id === 'nome'
                         ? validateRequired(event.target.value) : true
                     if (!isValid) {
                         setValidationErrors({
@@ -174,14 +134,6 @@ const Pecas = () => {
                 size: 80,
             },
             {
-                accessorKey: 'codigo',
-                header: 'Código',
-                size: 140,
-                muiEditTextFieldProps: ({ cell }) => ({
-                    ...getCommonEditTextFieldProps(cell),
-                }),
-            },
-            {
                 accessorKey: 'nome',
                 header: 'Nome',
                 size: 140,
@@ -190,39 +142,15 @@ const Pecas = () => {
                 }),
             },
             {
-                accessorKey: 'conjunto',
-                header: 'Conjunto',
-                size: 140,
-                muiEditTextFieldProps: ({ cell }) => ({
-                    children: conjuntoData.map((conjunto) => (
-                        <MenuItem key={conjunto.nome} value={conjunto._id}>
-                          {conjunto.nome}
-                        </MenuItem>
-                    )),
-                    select: true,
-                }),
-                Cell: ({ cell }) => {
-                    const nomeConjunto = conjuntoData.filter(conjunto => (conjunto._id === cell.getValue()));
-                    return nomeConjunto[0].nome;
-                }
-            },
-            {
-                accessorKey: 'localizacao',
-                header: 'Localização',
+                accessorKey: 'qnt_pecas',
+                header: 'Quantidade de peças no conjunto',
                 size: 140,
                 muiEditTextFieldProps: ({ cell }) => ({
                     ...getCommonEditTextFieldProps(cell),
                 }),
+                enableEditing: false
             },
-            {
-                accessorKey: 'qnt_estoque',
-                header: 'Quantidade em estoque',
-                size: 140,
-                muiEditTextFieldProps: ({ cell }) => ({
-                    ...getCommonEditTextFieldProps(cell),
-                }),
-            },
-        ], [getCommonEditTextFieldProps, conjuntoData]
+        ], [getCommonEditTextFieldProps],
     );
 
   return (
@@ -270,7 +198,7 @@ const Pecas = () => {
                         onClick={() => setCreateModalOpen(true)}
                         variant="contained"
                     >
-                        Criar Nova Peça
+                        Criar Novo Conjunto
                     </Button>}
                 </>
             )}
@@ -280,13 +208,12 @@ const Pecas = () => {
             open={createModalOpen}
             onClose={() => setCreateModalOpen(false)}
             onSubmit={handleCreateNewRow}
-            conjuntos={conjuntoData}
         />
     </Tabela>
   );
 };
 
-export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, conjuntos }) => {
+export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
     const [values, setValues] = useState(() =>
             columns.reduce((acc, column) => {
                 acc[column.accessorKey ?? ''] = '';
@@ -303,7 +230,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, conjun
 
     return (
         <Dialog open={open}>
-        <DialogTitle textAlign="center">Criar Nova Peça</DialogTitle>
+        <DialogTitle textAlign="center">Criar Novo Conjunto</DialogTitle>
         <DialogContent>
             <form onSubmit={(e) => e.preventDefault()}>
                 <Stack
@@ -315,8 +242,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, conjun
                 >
                     {columns.map((column) => (
                         column.header !== 'ID' &&
-                        column.header !== 'Conjunto' &&
-                        column.header !== 'Quantidade em estoque' ?
+                        column.header !== 'Quantidade de peças no conjunto' ?
                             <TextField
                                 key={column.accessorKey}
                                 label={column.header}
@@ -324,32 +250,8 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, conjun
                                 onChange={(e) =>
                                     setValues({ ...values, [e.target.name]: e.target.value })
                                 }
-                            /> : column.header === 'Conjunto' ?
-                                <Autocomplete
-                                    disablePortal
-                                    id="combo-box-demo"
-                                    onChange={(e, value) => {
-                                        try {
-                                            setValues({ ...values, [column.accessorKey]: value._id })
-                                        } catch (err) {
-                                            setValues({ ...values, [column.accessorKey]: '' })
-                                            console.log(err);
-                                        }
-                                    }}
-                                    options={conjuntos}
-                                    renderInput={(params) => <TextField {...params} label="Conjunto" />}
-                            /> : column.header === 'Quantidade em estoque' ?
-                                <TextField
-                                    key={column.accessorKey}
-                                    label={column.header}
-                                    name={column.accessorKey}
-                                    type='number'
-                                    onChange={(e) => {
-                                        if (e.target.value < 1) e.target.value = null;
-                                        setValues({ ...values, [e.target.name]: e.target.value });
-                                    }}
                             /> : <></>
-                        ))}
+                    ))}
                 </Stack>
             </form>
         </DialogContent>
@@ -367,4 +269,4 @@ const validateRequired = (value) => {
     return !!value.length;
 }
 
-export default Pecas;
+export default Conjunto;

@@ -197,9 +197,14 @@ const Ferramentas = () => {
                     const pecaFormatada = [];
 
                     cell.getValue().forEach(pecaRes => {
-                        const nomePeca = pecaData.filter(peca => (peca._id === pecaRes.peca))
-                        pecaFormatada.push(`${nomePeca[0].nome} x${pecaRes.quantidade}`);
-                    })
+                        const nomePeca = pecaData.filter(peca => (peca._id === pecaRes.peca));
+
+                        if (nomePeca.length < 1) {
+                           pecaFormatada.push(`PEÇA NÃO CADASTRADA x${pecaRes.quantidade}`);
+                        } else {
+                            pecaFormatada.push(`${nomePeca[0].nome} x${pecaRes.quantidade}`);
+                        }
+                    });
 
                     return pecaFormatada.join(', ');
                 },
@@ -349,10 +354,11 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas,
                             renderInput={(params) => <TextField {...params} label={`Peça ${index + 1}`} />}
                         />
                         <TextField
-                            label={`Quantidade ${index + 1}`}
+                            label={`Quantidade`}
                             type="number"
                             onChange={(e) => {
                                 try {
+                                    if (e.target.value < 1) e.target.value = null;
                                     const newQuantidade = [...pecasValues];
                                     newQuantidade[index] = { ...newQuantidade[index], quantidade: parseInt(e.target.value) };
                                     setPecasValues(newQuantidade);
