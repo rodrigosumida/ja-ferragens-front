@@ -23,7 +23,11 @@ import api from '../../api/axios';
 
 const Solicitacoes = () => {
     const [createModalOpen, setCreateModalOpen] = useState(false);
-    const [tableData, setTableData] = useState({});
+
+    const [tableAbertaData, setTableAbertaData] = useState([]);
+    const [tableConcluidaData, setTableConcluidaData] = useState([]);
+    const [tableRejeitadaData, setTableRejeitadaData] = useState([]);
+
     const [ferramentaData, setFerramentaData] = useState([]);
     const [ferramentaValues, setFerramentaValues] = useState([]);
 
@@ -42,13 +46,45 @@ const Solicitacoes = () => {
         .catch(err => console.log(err));
     }
 
+    const filtrarAbertas = (dados) => {
+        const dadosFiltrados = [];
+        dados.forEach(dado => {
+            if (dado.status === 'AGUARDANDO APROVAÇÃO' || dado.status === 'APROVADA') {
+              dadosFiltrados.push(dado);
+            }
+        });
+        return dadosFiltrados;
+    }
+
+    const filtrarConcluidas = (dados) => {
+        const dadosFiltrados = [];
+        dados.forEach(dado => {
+            if (dado.status === 'CONCLUÍDA') {
+              dadosFiltrados.push(dado);
+            }
+        });
+        return dadosFiltrados;
+    }
+
+    const filtrarRejeitadas = (dados) => {
+        const dadosFiltrados = [];
+        dados.forEach(dado => {
+            if (dado.status === 'REPROVADA' || dado.status === 'CANCELADA') {
+              dadosFiltrados.push(dado);
+            }
+        });
+        return dadosFiltrados;
+    }
+
     useEffect(() => {
         (async () => {
             await getFerramentaList();
 
             await api.get('/solicitacao/listar')
             .then(res => {
-                setTableData(res.data);
+                setTableAbertaData(filtrarAbertas(res.data));
+                setTableConcluidaData(filtrarConcluidas(res.data));
+                setTableRejeitadaData(filtrarRejeitadas(res.data));
             })
             .catch(err => console.log(err))
         })();
@@ -85,9 +121,9 @@ const Solicitacoes = () => {
         delete values._id;
         await api.post('/solicitacao/inserir', values)
         .then(res => {
-            tableData.push(res.data);
-            console.log(tableData);
-            setTableData([...tableData]);
+            tableAbertaData.push(res.data);
+            console.log(tableAbertaData);
+            setTableAbertaData([...tableAbertaData]);
         })
         .catch(err => console.log(err));
         return true;
@@ -95,10 +131,10 @@ const Solicitacoes = () => {
 
     const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
         if (!Object.keys(validationErrors).length) {
-            tableData[row.index] = values;
+            tableAbertaData[row.index] = values;
             await api.put('/solicitacao/atualizar/' + values._id, values)
             .then(res => {
-                setTableData([...tableData]);
+                setTableAbertaData([...tableAbertaData]);
             })
             .catch(err => console.log(err));
             exitEditingMode();
@@ -120,8 +156,8 @@ const Solicitacoes = () => {
             try {
                 // eslint-disable-next-line no-unused-vars
                 const response = await api.delete('/solicitacao/delete/' + row.getValue('_id'));
-                tableData.splice(row.index, 1);
-                setTableData([...tableData]);
+                tableAbertaData.splice(row.index, 1);
+                setTableAbertaData([...tableAbertaData]);
             } catch (error) {
                 if (error.response) {
                     console.log(error.response.status);
@@ -131,7 +167,7 @@ const Solicitacoes = () => {
                     console.log('Error', error.message);
                 }
             }
-        }, [tableData],
+        }, [tableAbertaData],
     );
 
     const handleAprovacao = async (row) => {
@@ -298,100 +334,181 @@ const Solicitacoes = () => {
         ], [getCommonEditTextFieldProps, ferramentaData],
     );
 
+    const columnsRej = useMemo(
+        () => [
+            {
+                accessorKey: '_id',
+                header: 'ID',
+                enableColumnOrdering: false,
+                enableEditing: false,
+                enableSorting: false,
+                size: 80,
+            },
+            {
+                accessorKey: 'codigo',
+                header: 'Código',
+                size: 140,
+            },
+            {
+                accessorKey: 'ferramentas',
+                header: 'Ferramentas',
+                size: 140,
+                Cell: ({ cell }) => {
+                    const ferramentaFormatada = [];
+
+                    cell.getValue().forEach(ferramentaRes => {
+                        const nomeFerramenta = ferramentaData.filter(ferramenta => (ferramenta._id === ferramentaRes.ferramenta));
+
+                        if (nomeFerramenta.length < 1) {
+                            ferramentaFormatada.push(`FERRAMENTA NÃO CADASTRADA x${ferramentaRes.quantidade}`);
+                        } else {
+                            ferramentaFormatada.push(`${nomeFerramenta[0].nome} x${ferramentaRes.quantidade}`);
+                        }
+                    })
+
+                    return ferramentaFormatada.join(', ');
+                }
+            },
+            {
+                accessorKey: 'data_entrada',
+                header: 'Data da solicitação',
+                size: 140,
+                Cell: ({ cell }) => new Date(cell.getValue()).toLocaleString()
+            },
+            {
+                accessorKey: 'status',
+                header: 'Status',
+                size: 140,
+            },
+            {
+                accessorKey: 'justificativa',
+                header: 'Justificativa',
+                size: 140
+            }
+        ], [ferramentaData],
+    );
+
     return (
-        <Tabela>
-            <MaterialReactTable
-                displayColumnDefOptions={{
-                    'mrt-row-actions': {
-                        size: 120,
-                    },
-                }}
-                columns={columns}
-                data={tableData}
-                editingMode="modal"
-                initialState={{ columnVisibility: { _id: false } }}
-                enableColumnOrdering
-                enableEditing
-                localization={MRT_Localization_PT_BR}
-                onEditingRowSave={handleSaveRowEdits}
-                onEditingRowCancel={handleCancelRowEdits}
-                renderRowActions={({ row, table }) => (
-                    <Box sx={{ display: 'flex', gap: '1rem' }}>
-                        {user !== 'ADMIN' ? <></> : 
-                        <>
-                            <Tooltip arrow placement="left" title="Editar Solicitação">
-                                <IconButton onClick={() => table.setEditingRow(row)}>
-                                    <Edit />
+        <>
+            <h2 style={{ color: 'white' }}>Solicitações abertas</h2>
+            <Tabela>
+                <MaterialReactTable
+                    displayColumnDefOptions={{
+                        'mrt-row-actions': {
+                            size: 120,
+                        },
+                    }}
+                    columns={columns}
+                    data={tableAbertaData}
+                    editingMode="modal"
+                    initialState={{ columnVisibility: { _id: false } }}
+                    enableColumnOrdering
+                    enableEditing
+                    localization={MRT_Localization_PT_BR}
+                    onEditingRowSave={handleSaveRowEdits}
+                    onEditingRowCancel={handleCancelRowEdits}
+                    renderRowActions={({ row, table }) => (
+                        <Box sx={{ display: 'flex', gap: '1rem' }}>
+                            {user !== 'ADMIN' ? <></> : 
+                            <>
+                                <Tooltip arrow placement="left" title="Editar Solicitação">
+                                    <IconButton onClick={() => table.setEditingRow(row)}>
+                                        <Edit />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip arrow placement="right" title="Deletar Solicitação">
+                                    <IconButton color="error" onClick={() => handleDeleteRow(row)}>
+                                        <Delete />
+                                    </IconButton>
+                                </Tooltip>
+                            </>}
+                            
+                            {row.getValue('status') !== 'AGUARDANDO APROVAÇÃO' || (user !== 'ADMIN' && user !== 'APROVADOR') ? <></> :
+                            <>
+                                <Tooltip arrow placement="right" title="Aprovar solicitação">
+                                    <IconButton color="success" onClick={() => handleAprovacao(row)}>
+                                        <Check />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip arrow placement="right" title="Reprovar solicitação">
+                                <IconButton color="error" onClick={() => handleReprovacao(row)}>
+                                    <Close />
                                 </IconButton>
-                            </Tooltip>
-                            <Tooltip arrow placement="right" title="Deletar Solicitação">
-                                <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                                    <Delete />
+                                </Tooltip>
+                            </>}
+                            {row.getValue('status') !== 'APROVADA' || (user !== 'ADMIN' && user !== 'APROVADOR') ? <></> :
+                            <>
+                                <Tooltip arrow placement="right" title="Concluir solicitação">
+                                    <IconButton color="success" onClick={() => handleConclusao(row)}>
+                                        <Check />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip arrow placement="right" title="Cancelar solicitação">
+                                <IconButton color="error" onClick={() => handleCancelamento(row)}>
+                                    <Close />
                                 </IconButton>
-                            </Tooltip>
-                        </>}
-                        
-                        {row.getValue('status') !== 'AGUARDANDO APROVAÇÃO' || (user !== 'ADMIN' && user !== 'APROVADOR') ? <></> :
-                        <>
-                            <Tooltip arrow placement="right" title="Aprovar solicitação">
-                                <IconButton color="success" onClick={() => handleAprovacao(row)}>
-                                    <Check />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip arrow placement="right" title="Reprovar solicitação">
-                            <IconButton color="error" onClick={() => handleReprovacao(row)}>
-                                <Close />
-                            </IconButton>
-                            </Tooltip>
-                        </>}
-                        {row.getValue('status') !== 'APROVADA' || (user !== 'ADMIN' && user !== 'APROVADOR') ? <></> :
-                        <>
-                            <Tooltip arrow placement="right" title="Concluir solicitação">
-                                <IconButton color="success" onClick={() => handleConclusao(row)}>
-                                    <Check />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip arrow placement="right" title="Cancelar solicitação">
-                            <IconButton color="error" onClick={() => handleCancelamento(row)}>
-                                <Close />
-                            </IconButton>
-                            </Tooltip>
-                        </>}
-                    </Box>
-                )}
-                renderTopToolbarCustomActions={() => (
-                    <Button
-                        sx={{
-                            margin: 1
-                        }}
-                        color='warning'
-                        onClick={() => {
-                            const qnt_ferramentas = parseInt(prompt("Quantos tipos de ferramentas essa solicitação possui?"));
+                                </Tooltip>
+                            </>}
+                        </Box>
+                    )}
+                    renderTopToolbarCustomActions={() => (
+                        <Button
+                            sx={{
+                                margin: 1
+                            }}
+                            color='warning'
+                            onClick={() => {
+                                const qnt_ferramentas = parseInt(prompt("Quantos tipos de ferramentas essa solicitação possui?"));
 
-                            if (!qnt_ferramentas || qnt_ferramentas < 1) {
-                                alert("Valor inválido!");
-                                return;
-                            }
+                                if (!qnt_ferramentas || qnt_ferramentas < 1) {
+                                    alert("Valor inválido!");
+                                    return;
+                                }
 
-                            setFerramentaValues(new Array(qnt_ferramentas).fill(''));
-                            setCreateModalOpen(true);
-                        }}
-                        variant="contained"
-                    >
-                        Criar Nova Solicitação
-                    </Button>
-                )}
-            />
-            <CreateNewAccountModal
-                columns={columns}
-                open={createModalOpen}
-                onClose={() => setCreateModalOpen(false)}
-                onSubmit={handleCreateNewRow}
-                ferramentas={ferramentaData}
-                ferramentaValues={ferramentaValues}
-                setFerramentaValues={setFerramentaValues}
-            />
-        </Tabela>
+                                setFerramentaValues(new Array(qnt_ferramentas).fill(''));
+                                setCreateModalOpen(true);
+                            }}
+                            variant="contained"
+                        >
+                            Criar Nova Solicitação
+                        </Button>
+                    )}
+                />
+                <CreateNewAccountModal
+                    columns={columns}
+                    open={createModalOpen}
+                    onClose={() => setCreateModalOpen(false)}
+                    onSubmit={handleCreateNewRow}
+                    ferramentas={ferramentaData}
+                    ferramentaValues={ferramentaValues}
+                    setFerramentaValues={setFerramentaValues}
+                />
+            </Tabela>
+
+            <h2 style={{ color: 'white' }}>Solicitações concluídas</h2>
+            <Tabela>
+                <MaterialReactTable
+                    columns={columns}
+                    data={tableConcluidaData}
+                    editingMode="modal"
+                    initialState={{ columnVisibility: { _id: false } }}
+                    enableColumnOrdering
+                    localization={MRT_Localization_PT_BR}
+                />
+            </Tabela>
+
+            <h2 style={{ color: 'white' }}>Solicitações rejeitadas</h2>
+            <Tabela>
+                <MaterialReactTable
+                    columns={columnsRej}
+                    data={tableRejeitadaData}
+                    editingMode="modal"
+                    initialState={{ columnVisibility: { _id: false } }}
+                    enableColumnOrdering
+                    localization={MRT_Localization_PT_BR}
+                />
+            </Tabela>
+        </>
     );
 };
 
