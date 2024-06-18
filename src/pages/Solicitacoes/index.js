@@ -14,7 +14,7 @@ import {
     TextField,
     Tooltip,
 } from '@mui/material';
-import { Check, Close, Delete, Edit } from '@mui/icons-material';
+import { Check, Close, Delete } from '@mui/icons-material';
 import { MRT_Localization_PT_BR } from 'material-react-table/locales/pt-BR';
 
 import { Tabela } from './styled';
@@ -411,11 +411,6 @@ const Solicitacoes = () => {
                         <Box sx={{ display: 'flex', gap: '1rem' }}>
                             {user !== 'ADMIN' ? <></> : 
                             <>
-                                <Tooltip arrow placement="left" title="Editar Solicitação">
-                                    <IconButton onClick={() => table.setEditingRow(row)}>
-                                        <Edit />
-                                    </IconButton>
-                                </Tooltip>
                                 <Tooltip arrow placement="right" title="Deletar Solicitação">
                                     <IconButton color="error" onClick={() => handleDeleteRow(row)}>
                                         <Delete />

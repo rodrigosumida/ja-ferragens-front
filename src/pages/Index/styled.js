@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const Content = styled.div`
     background: white;
-    padding: 100px 150px;
+    padding: 50px 150px;
     max-height: fit-content;
     margin: 0;
 `;
@@ -12,8 +12,7 @@ export const Container = styled.div`
     max-width: 100%;
     display: block;
     box-sizing: border-box;
-    padding: 50px 0;
-    background: red;
+    padding: 30px 0;
 `;
 
 export const Titulo = styled.h1`
@@ -35,7 +34,6 @@ export const Descricao = styled.span`
 
 export const ContainerOpcoes = styled.div`
     display: block;
-    background: green;
 `;
 
 export const ListaOpcoes = styled.ul`
@@ -51,13 +49,19 @@ export const ItemOpcoes = styled.li`
     justify-content: center;
     align-items: center;
     display: flex;
-    background: blue;
     margin: 0 auto;
     border-radius: 7px;
     border: solid 1px #ddd;
 
     &:hover {
         background: rgba(0, 0, 0, 0.1);
+    }
+
+    a {
+        display: flex;
+        color: black;
+        justify-content: center;
+        align-items: center;
     }
 `;
 
@@ -76,4 +80,13 @@ export const TextoOpcao = styled.span`
 
 export const LinhaHorizontal = styled.hr`
     margin: 10px 0;
+`;
+
+export const ContainerEstatisticas = styled.div`
+    margin: 0;
+`;
+
+export const TituloEstatistica = styled.h4`
+    font-weight: normal;
+    margin-bottom: 10px;
 `;

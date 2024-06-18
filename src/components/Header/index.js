@@ -4,36 +4,27 @@ import { Link } from 'react-router-dom';
 import logo from './logo_ferragens_negrao.png';
 import MenuUser from '../MenuUser';
 
-import { AccountItem, Logo, Nav, NavList, NavItem } from './styled';
+import { AccountItem, ImgItem, ListItem, Logo, Nav, NavList } from './styled';
 
 export default function Header() {
   return (
     <Nav>
-      <Link to="/">
-        <Logo src={logo} alt="Logo Ferragens Negrão"/>
-      </Link>
-
       <NavList>
-        <NavItem>
-          <Link to="/pecas">
-            Peças
-          </Link>
-        </NavItem>
-        <NavItem>
-          <Link to="/conjunto">
-            Conjuntos
-          </Link>
-        </NavItem>
-        <NavItem>
-          <Link to="/ferramentas">
-            Ferramentas
-          </Link>
-        </NavItem>
-        <NavItem>
-          <Link to="/solicitacoes">
-            Solicitações
-          </Link>
-        </NavItem>
+        <ImgItem>
+          <Link to='/'><Logo src={logo}/></Link>
+        </ImgItem>
+        <ListItem>
+          <Link to='/pecas'>Peças</Link>
+        </ListItem>
+        <ListItem>
+          <Link to='/ferramentas'>Ferramentas</Link>
+        </ListItem>
+        <ListItem>
+          <Link to='/conjuntos'>Conjuntos</Link>
+        </ListItem>
+        <ListItem>
+          <Link to='/solicitacoes'>Solicitações</Link>
+        </ListItem>
       </NavList>
 
       <MenuUser />

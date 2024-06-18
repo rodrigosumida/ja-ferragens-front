@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { MaterialReactTable } from 'material-react-table';
 import {
     Autocomplete,
@@ -24,14 +25,15 @@ import api from '../../api/axios';
 const Ferramentas = () => {
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [tableData, setTableData] = useState({});
+    
     const [pecaData, setPecaData] = useState([]);
-
-    const [qntPecas, setQntPecas] = useState(0);
     const [pecasValues, setPecasValues] = useState([]);
 
     const [validationErrors, setValidationErrors] = useState({});
 
     const user = useSelector(state => state.userType.user);
+
+    const navigate = useNavigate();
 
     const getPecasList = async () => {
         await api.get('/peca/listar')
@@ -134,6 +136,20 @@ const Ferramentas = () => {
         }, [tableData],
     );
 
+    const handleEditRow = useCallback(
+        (row) => {
+            const qnt_pecas = parseInt(prompt("Quantos tipos de peças essa ferramenta possui?"));
+
+            if (!qnt_pecas || qnt_pecas < 1) {
+                alert("Valor inválido!");
+                return;
+            }
+
+            console.log(`/ferramentas/editar/${row.getValue('_id')}/${qnt_pecas}`);
+            navigate(`/ferramentas/editar/${row.getValue('_id')}/${qnt_pecas}`, { replace: false });
+        }, [navigate],
+    );
+
     const getCommonEditTextFieldProps = useCallback(
         (cell) => {
             return {
@@ -233,12 +249,12 @@ const Ferramentas = () => {
                 <Box sx={{ display: 'flex', gap: '1rem' }}>
                     {user !== 'ADMIN' ? <></> : 
                     <>
-                        <Tooltip arrow placement="left" title="Editar Solicitação">
-                            <IconButton onClick={() => table.setEditingRow(row)}>
+                        <Tooltip arrow placement="left" title="Editar Ferramenta">
+                            <IconButton onClick={() => handleEditRow(row)}>
                                 <Edit />
                             </IconButton>
                         </Tooltip>
-                        <Tooltip arrow placement="right" title="Deletar Solicitação">
+                        <Tooltip arrow placement="right" title="Deletar Ferramenta">
                             <IconButton color="error" onClick={() => handleDeleteRow(row)}>
                                 <Delete />
                             </IconButton>
@@ -262,7 +278,6 @@ const Ferramentas = () => {
                                 return;
                             }
 
-                            setQntPecas(qnt_pecas);
                             setPecasValues(new Array(qnt_pecas).fill(''));
                             setCreateModalOpen(true);
                         }}
@@ -279,7 +294,6 @@ const Ferramentas = () => {
             onClose={() => setCreateModalOpen(false)}
             onSubmit={handleCreateNewRow}
             pecas={pecaData}
-            qntPecas={qntPecas}
             pecasValues={pecasValues}
             setPecasValues={setPecasValues}
         />
@@ -288,7 +302,7 @@ const Ferramentas = () => {
 };
 
 
-export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas, qntPecas, pecasValues, setPecasValues }) => {
+export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, pecas, pecasValues, setPecasValues }) => {
     const [values, setValues] = useState(() =>
             columns.reduce((acc, column) => {
                 acc[column.accessorKey ?? ''] = '';
