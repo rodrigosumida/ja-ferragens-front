@@ -390,7 +390,7 @@ const Solicitacoes = () => {
 
     return (
         <>
-            <h2 style={{ color: 'white' }}>Solicitações abertas</h2>
+            <h2 style={{ color: 'white', textAlign: 'center', margin: '1em' }}>Solicitações abertas</h2>
             <Tabela>
                 <MaterialReactTable
                     displayColumnDefOptions={{
@@ -480,7 +480,7 @@ const Solicitacoes = () => {
                 />
             </Tabela>
 
-            <h2 style={{ color: 'white' }}>Solicitações concluídas</h2>
+            <h2 style={{ color: 'white', textAlign: 'center', margin: '1em' }}>Solicitações concluídas</h2>
             <Tabela>
                 <MaterialReactTable
                     columns={columns}
@@ -492,7 +492,7 @@ const Solicitacoes = () => {
                 />
             </Tabela>
 
-            <h2 style={{ color: 'white' }}>Solicitações rejeitadas</h2>
+            <h2 style={{ color: 'white', textAlign: 'center', margin: '1em' }}>Solicitações rejeitadas</h2>
             <Tabela>
                 <MaterialReactTable
                     columns={columnsRej}

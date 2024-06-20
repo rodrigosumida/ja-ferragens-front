@@ -6,6 +6,12 @@ export const Nav = styled.nav`
     align-items: center;
     max-width: 100%;
     height: fit-content;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    justify-content: space-between;
 `;
 
 export const NavList = styled.ul`
@@ -19,12 +25,17 @@ export const AccountItem = styled.div`
     a {
         padding: 10px;
         display: block;
-        color: #fff;
+        color: #000;
         font-weight: bold;
         height: 100%;
         font-size: 15px;
-        background: #ed6c02;
+        background: #FFF;
         border-radius: 4px;
+    }
+
+    a:hover {
+        transition: 0.7s;
+        transform: scale(1.2)
     }
 `;
 
@@ -35,7 +46,9 @@ export const ImgItem = styled.li`
 `;
 
 export const Logo = styled.img`
-
+    width: 12em;
+    margin-left: 10px;
+    margin-right: 10px;
 `;
 
 export const ListItem = styled.li`
@@ -49,12 +62,13 @@ export const ListItem = styled.li`
         font-weight: bold;
         font-size: 17px;
         width: 100%;
-        height: 100%;
-        padding: 0 15px;
+        height: 35%;
+        padding: 10px 15px;
         align-items: center;
     }
 
-    &:hover {
-        background: rgba(255, 255, 255, 0.1);
+    a:hover {
+        border-bottom: 1px solid #fff;
+        transition: 1.5s;
     }
 `;

@@ -30,7 +30,7 @@ export default function Header() {
       <MenuUser />
       <AccountItem>
         <Link to="/login">
-          <span>Login</span>
+          <span>Entrar</span>
         </Link>
       </AccountItem>
     </Nav>

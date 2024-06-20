@@ -16,6 +16,7 @@ export default createGlobalStyle`
 
   html, body #root {
     height: 100%;
+    padding-top: 3.5em;
   }
 
   button {

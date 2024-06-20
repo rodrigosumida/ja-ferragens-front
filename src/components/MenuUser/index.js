@@ -49,6 +49,7 @@ export default function MenuUser() {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
+        sx={{ zIndex: 1300 }}
         MenuListProps={{
           'aria-labelledby': 'basic-button',
         }}
